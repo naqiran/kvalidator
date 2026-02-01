@@ -1,0 +1,12 @@
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
+nebula = { id = "nebula.release", version = "21.0.0" }
+spotless = { id = "com.diffplug.spotless", version = "8.2.1" }
+
+[libraries]
+kotest-bom = { group = "io.kotest", name = "kotest-bom", version = "6.1.2" }
+kotest-jvm = { group="io.kotest", name= "kotest-runner-junit5-jvm" }
+kotest-assertion =  { group="io.kotest", name="kotest-assertions-core-jvm" }
+
+[bundles]
+kotest = ["kotest-jvm", "kotest-assertion"]
