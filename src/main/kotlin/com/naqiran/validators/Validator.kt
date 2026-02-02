@@ -48,7 +48,7 @@ class ApplicationValidator {
         value: String?,
         maxLength: Int,
         message: () -> String,
-    ) = check(value.orEmpty().length.let { length -> length in 1..maxLength }, message)
+    ) = check(value.orEmpty().length <= maxLength, message)
 
     fun checkNull(
         value: Any?,

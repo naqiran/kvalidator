@@ -8,8 +8,9 @@ fun Order.validate() =
     validate("Order Id: $orderId") {
         checkNotNull(orderId) { "Order ID must not be null" }
         checkGreater(amount, 0.toBigDecimal()) { "Order Amount must be greater than zero" }
-        add(lines.validate())
-        notAValidatorMethod()
+        add(lines.validate())  //Desired
+        lines.validate() //Undesired
+        notAValidatorMethod() //Undesired
     }
 
 fun List<Order.OrderLine>?.validate() = this?.map { it.validate() }.reduceInvalid { "Lines cannot be empty" }
@@ -24,7 +25,6 @@ fun Order.OrderLine.validate() =
     }
 
 fun notAValidatorMethod(): String {
-    println("I am not a validator method")
     return "Not a validator"
 }
 
