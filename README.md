@@ -11,10 +11,23 @@ In short, it provides a clean, composable way to express validation logic thatâ€
 ### Simple Validation
 
 ```kotlin
+// Produces the Application Validator can be used to aggregate logic
 val validator = validate("userInfo") {
     checkNotBlank(name) { "Name must be provided." }
     checkGreater(balance, BigDecimal.ZERO) { "Balance must be positive." }
 }.toResult().getOrThrow()
+
+// Produces the Result<Boolean> on error produces Result with Constraint Violation
+val validator = validateToResult("userInfo") {
+    checkNotBlank(name) { "Name must be provided." }
+    checkGreater(balance, BigDecimal.ZERO) { "Balance must be positive." }
+}.getOrThrow()
+
+// It throws the error immediately
+val validator = validateAndThrow("userInfo") {
+    checkNotBlank(name) { "Name must be provided." }
+    checkGreater(balance, BigDecimal.ZERO) { "Balance must be positive." }
+}
 ```
 
 ### Composable Validation

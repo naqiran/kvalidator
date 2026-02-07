@@ -1,6 +1,5 @@
 package com.naqiran.validators
 
-import java.math.BigDecimal
 import java.util.UUID
 
 @DslMarker annotation class ValidatorDsl
@@ -29,10 +28,34 @@ class ApplicationValidator {
     ) = check(value != null, message)
 
     fun checkGreater(
-        value: BigDecimal?,
-        threshold: BigDecimal,
+        value: Number?,
+        threshold: Number,
         message: () -> String,
-    ) = check(value != null && value > threshold, message)
+    ) = check(value != null && value.toDouble() > threshold.toDouble(), message)
+
+    fun checkGreaterOrEqual(
+        value: Number?,
+        threshold: Number,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() >= threshold.toDouble(), message)
+
+    fun checkLesser(
+        value: Number?,
+        threshold: Number,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() < threshold.toDouble(), message)
+
+    fun <T> checkLesserOrEqual(
+        value: Number?,
+        threshold: Number,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() <= threshold.toDouble(), message)
+
+    fun <T> checkEquals(
+        value1: Number?,
+        value2: Number,
+        message: () -> String,
+    ) = check(value1 != null && value1.toDouble() == value2.toDouble(), message)
 
     fun checkBlank(
         value: String?,
@@ -67,25 +90,19 @@ class ApplicationValidator {
         message: () -> String,
     ) = check(first != null && second != null && first == second, message)
 
-    fun <T> checkIn(
+    fun <T> checkIsIn(
         value: T?,
         values: Iterable<T>,
         message: () -> String,
     ) = check(value in values, message)
 
-    fun <T : Enum<T>> checkIn(
+    fun <T : Enum<T>> checkIsIn(
         value: String?,
         clazz: Class<T>,
         message: () -> String,
     ) = check(clazz.enumConstants.any { it.name == value }) {
         "${message()} and valid values are ${clazz.enumConstants.joinToString(", ") { it.name }}"
     }
-
-    fun checkEquals(
-        value1: BigDecimal?,
-        value2: BigDecimal?,
-        message: () -> String,
-    ) = check(value1 != null && value2 != null && value1.compareTo(value2) == 0, message)
 
     fun fail(message: () -> String) = check(false, message)
 
@@ -131,17 +148,27 @@ class ApplicationValidator {
     class ValidationException(
         message: String,
     ) : Exception(message)
+
+    companion object {
+        fun failingValidator(message: String): ApplicationValidator {
+            val validator = ApplicationValidator()
+            validator.fail { message }
+            return validator
+        }
+
+        fun successValidator() = ApplicationValidator()
+    }
 }
 
-fun ApplicationValidator?.orValid(): ApplicationValidator = this ?: validate {}
+fun ApplicationValidator?.orValid(): ApplicationValidator = this ?: ApplicationValidator.successValidator()
 
-fun ApplicationValidator?.orInValid(message: () -> String) = this ?: validate { fail { message() } }
+fun ApplicationValidator?.orInValid(message: () -> String) = this ?: ApplicationValidator.failingValidator(message())
 
-fun List<ApplicationValidator>?.reduceValid() = validate {}.addAll(this)
+fun List<ApplicationValidator>?.reduceValid() = ApplicationValidator.successValidator().addAll(this)
 
 fun List<ApplicationValidator>?.reduceInvalid(message: () -> String) =
     if (this.isNullOrEmpty()) {
-        validate { fail { message() } }
+        ApplicationValidator.failingValidator(message())
     } else {
         this.reduceValid()
     }
@@ -149,8 +176,17 @@ fun List<ApplicationValidator>?.reduceInvalid(message: () -> String) =
 inline fun validate(
     key: String? = null,
     block: ApplicationValidator.() -> Unit,
-): ApplicationValidator {
-    val validator = ApplicationValidator(key)
-    validator.block()
-    return validator
+) = ApplicationValidator(key).let {
+    block(it)
+    it
 }
+
+inline fun validateToResult(
+    key: String? = null,
+    block: ApplicationValidator.() -> Unit,
+) = validate(key, block).toResult()
+
+inline fun validateAndThrow(
+    key: String? = null,
+    block: ApplicationValidator.() -> Unit,
+) = validateToResult(key, block).getOrThrow()

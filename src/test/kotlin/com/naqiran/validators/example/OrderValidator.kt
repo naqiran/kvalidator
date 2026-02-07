@@ -8,9 +8,9 @@ fun Order.validate() =
     validate("Order Id: $orderId") {
         checkNotNull(orderId) { "Order ID must not be null" }
         checkGreater(amount, 0.toBigDecimal()) { "Order Amount must be greater than zero" }
-        add(lines.validate())  //Desired
-        lines.validate() //Undesired
-        notAValidatorMethod() //Undesired
+        add(lines.validate()) // Desired
+        lines.validate() // Undesired
+        notAValidatorMethod() // Undesired
     }
 
 fun List<Order.OrderLine>?.validate() = this?.map { it.validate() }.reduceInvalid { "Lines cannot be empty" }
@@ -24,9 +24,7 @@ fun Order.OrderLine.validate() =
         checkNotNull(lineAmount) { "Line Amount must not be null" }
     }
 
-fun notAValidatorMethod(): String {
-    return "Not a validator"
-}
+fun notAValidatorMethod(): String = "Not a validator"
 
 data class Order(
     var orderId: String? = null,

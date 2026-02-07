@@ -1,5 +1,5 @@
 [plugins]
-kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.10" }
 nebula = { id = "nebula.release", version = "21.0.0" }
 spotless = { id = "com.diffplug.spotless", version = "8.2.1" }
 
