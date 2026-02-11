@@ -45,13 +45,13 @@ class ApplicationValidator {
         message: () -> String,
     ) = check(value != null && value.toDouble() < threshold.toDouble(), message)
 
-    fun <T> checkLesserOrEqual(
+    fun checkLesserOrEqual(
         value: Number?,
         threshold: Number,
         message: () -> String,
     ) = check(value != null && value.toDouble() <= threshold.toDouble(), message)
 
-    fun <T> checkEquals(
+    fun checkEquals(
         value1: Number?,
         value2: Number,
         message: () -> String,
@@ -67,16 +67,136 @@ class ApplicationValidator {
         message: () -> String,
     ) = check(!value.isNullOrBlank(), message)
 
-    fun checkLength(
+    fun checkMaxLength(
         value: String?,
         maxLength: Int,
         message: () -> String,
     ) = check(value.orEmpty().length <= maxLength, message)
 
+    fun checkMinLength(
+        value: String?,
+        minLength: Int,
+        message: () -> String,
+    ) = check(value.orEmpty().length >= minLength, message)
+
+    fun checkExactLength(
+        value: String?,
+        length: Int,
+        message: () -> String,
+    ) = check(value.orEmpty().length == length, message)
+
+    fun checkContains(
+        value: String?,
+        fragment: String,
+        message: () -> String,
+    ) = check(value.orEmpty().contains(fragment), message)
+
+    fun checkStartsWith(
+        value: String?,
+        prefix: String,
+        message: () -> String,
+    ) = check(value.orEmpty().startsWith(prefix), message)
+
+    fun checkEndsWith(
+        value: String?,
+        suffix: String,
+        message: () -> String,
+    ) = check(value.orEmpty().endsWith(suffix), message)
+
+    fun checkMatchesRegex(
+        value: String?,
+        regex: Regex,
+        message: () -> String,
+    ) = check(value != null && regex.matches(value), message)
+
+    fun checkMatchesAnyRegex(
+        value: String?,
+        regexes: Iterable<Regex>,
+        message: () -> String,
+    ) = check(value != null && regexes.any { it.matches(value) }, message)
+
+    fun checkAlpha(
+        value: String?,
+        message: () -> String,
+    ) = check(value != null && value.matches(Regex("^[A-Za-z]+$")), message)
+
+    fun checkAlphanumeric(
+        value: String?,
+        message: () -> String,
+    ) = check(value != null && value.matches(Regex("^[A-Za-z0-9]+$")), message)
+
+    fun checkInRange(
+        value: Number?,
+        min: Number,
+        max: Number,
+        message: () -> String,
+    ) = check(
+        value != null && value.toDouble() >= min.toDouble() && value.toDouble() <= max.toDouble(),
+        message,
+    )
+
+    fun checkInRangeExclusive(
+        value: Number?,
+        min: Number,
+        max: Number,
+        message: () -> String,
+    ) = check(
+        value != null && value.toDouble() > min.toDouble() && value.toDouble() < max.toDouble(),
+        message,
+    )
+
+    fun checkBetween(
+        value: Number?,
+        min: Number,
+        max: Number,
+        message: () -> String,
+    ) = checkInRange(value, min, max, message)
+
+    fun checkPositive(
+        value: Number?,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() > 0, message)
+
+    fun checkNonNegative(
+        value: Number?,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() >= 0, message)
+
+    fun checkNegative(
+        value: Number?,
+        message: () -> String,
+    ) = check(value != null && value.toDouble() < 0, message)
+
     fun checkNull(
         value: Any?,
         message: () -> String,
     ) = check(value == null, message)
+
+    fun checkCollectionSize(
+        value: Iterable<*>?,
+        size: Int,
+        message: () -> String,
+    ) = check(value?.count() == size, message)
+
+    fun checkNotEmpty(
+        value: String?,
+        message: () -> String,
+    ) = check(!value.isNullOrEmpty(), message)
+
+    fun checkNotEmpty(
+        value: Iterable<*>?,
+        message: () -> String,
+    ) = check(value?.any() == true, message)
+
+    fun checkEmpty(
+        value: String?,
+        message: () -> String,
+    ) = check(value.isNullOrEmpty(), message)
+
+    fun checkEmpty(
+        value: Iterable<*>?,
+        message: () -> String,
+    ) = check(value?.none() == true, message)
 
     fun <T> checkAll(
         listValue: Iterable<T>?,
@@ -96,7 +216,7 @@ class ApplicationValidator {
         message: () -> String,
     ) = check(value in values, message)
 
-    fun <T : Enum<T>> checkIsIn(
+    fun <T : Enum<T>> checkEnumMember(
         value: String?,
         clazz: Class<T>,
         message: () -> String,
