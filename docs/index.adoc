@@ -1,0 +1,128 @@
+= Kotlin Validator (kvalidator) Documentation
+
+This library provides a small, Kotlin-first DSL for validation. You compose checks, collect violations, and convert them into a `Result` or throw an exception. The API is designed to be readable and composable without nested `if` statements.
+
+== Goals
+
+* Express validation rules in a declarative style.
+* Aggregate violations with clear, contextual messages.
+* Compose validators across object graphs.
+* Provide flexible outputs: `Result`, exceptions, or a raw list of violations.
+
+== Core Concepts
+
+=== ApplicationValidator
+
+`ApplicationValidator` is the core collector of violations. Each validator has a `key` that is used to prefix failure messages, making errors easier to trace.
+
+Key behaviors:
+
+* Each `check*` adds a `ConstraintViolation` when the predicate is false.
+* `toResult()` returns `Result.success(true)` when there are no violations, otherwise `Result.failure(ValidationException)`.
+* `add()` and `addAll()` compose multiple validators into one.
+
+=== Violation Format
+
+The default error message combines the validator key and the violation message:
+
+[source,text]
+----
+<key> - <message>
+----
+
+You can override the message string passed to `toResult(...)` to replace the aggregated message.
+
+== API Overview
+
+=== Validation entry points
+
+* `validate(key, block)` returns `ApplicationValidator`
+* `validateToResult(key, block)` returns `Result<Boolean>`
+* `validateAndThrow(key, block)` throws `ValidationException` on failure
+
+=== Checks
+
+* `check(predicate, message)`
+* `checkNotNull(value, message)`
+* `checkNull(value, message)`
+* `checkBlank(value, message)`
+* `checkNotBlank(value, message)`
+* `checkMaxLength(value, maxLength, message)`
+* `checkMinLength(value, minLength, message)`
+* `checkExactLength(value, length, message)`
+* `checkContains(value, fragment, message)`
+* `checkStartsWith(value, prefix, message)`
+* `checkEndsWith(value, suffix, message)`
+* `checkGreater(value, threshold, message)`
+* `checkGreaterOrEqual(value, threshold, message)`
+* `checkLesser(value, threshold, message)`
+* `checkLesserOrEqual(value, threshold, message)`
+* `checkEquals(value1, value2, message)`
+* `checkInRange(value, min, max, message)`
+* `checkInRangeExclusive(value, min, max, message)`
+* `checkBetween(value, min, max, message)`
+* `checkPositive(value, message)`
+* `checkNonNegative(value, message)`
+* `checkNegative(value, message)`
+* `checkAll(listValue, predicate, message)`
+* `checkEqualsAndNotNull(first, second, message)`
+* `checkIsIn(value, values, message)`
+* `checkEnumMember(value, enumClass, message)`
+* `checkMatchesRegex(value, regex, message)`
+* `checkMatchesAnyRegex(value, regexes, message)`
+* `checkAlpha(value, message)`
+* `checkAlphanumeric(value, message)`
+* `checkCollectionSize(value, size, message)`
+* `checkNotEmpty(value, message)`
+* `checkEmpty(value, message)`
+* `fail(message)` (always adds a violation)
+
+=== Composition helpers
+
+* `ApplicationValidator.add(validator)` and `addAll(list)`
+* `ApplicationValidator?.orValid()` and `.orInValid(message)`
+* `List<ApplicationValidator>?.reduceValid()` and `.reduceInvalid(message)`
+
+== Usage Examples
+
+=== Simple validation
+
+[source,kotlin]
+----
+val result = validateToResult("userInfo") {
+    checkNotBlank(name) { "Name must be provided" }
+    checkGreater(balance, BigDecimal.ZERO) { "Balance must be positive" }
+}
+
+result.getOrThrow()
+----
+
+=== Composable validation
+
+[source,kotlin]
+----
+val lineValidator = validate("line") {
+    checkNotNull(lineId) { "Line ID is required" }
+    checkGreater(quantity, 0) { "Quantity must be positive" }
+}
+
+val orderValidator = validate("order") {
+    checkNotNull(orderId) { "Order ID is required" }
+    add(lineValidator)
+}
+
+orderValidator.toResult().getOrThrow()
+----
+
+=== Enum validation
+
+[source,kotlin]
+----
+enum class Color { RED, GREEN }
+
+val result = validateToResult("color") {
+    checkEnumMember("BLUE", Color::class.java) { "Invalid color" }
+}
+
+// Failure message includes valid values: "RED, GREEN"
+----

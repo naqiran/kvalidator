@@ -1,5 +1,7 @@
 package com.naqiran.validators
 
+import java.net.URL
+import java.time.LocalDate
 import java.util.UUID
 
 @DslMarker annotation class ValidatorDsl
@@ -225,6 +227,29 @@ class ApplicationValidator {
     }
 
     fun fail(message: () -> String) = check(false, message)
+
+    fun <T> checkNotIn(
+        value: T?,
+        values: Iterable<T>,
+        message: () -> String,
+    ) = check(value !in values, message)
+
+    fun checkUrl(
+        value: String?,
+        message: () -> String,
+    ) = check(value != null && runCatching { URL(value) }.isSuccess, message)
+
+    fun checkBefore(
+        date: LocalDate?,
+        cutoff: LocalDate,
+        message: () -> String,
+    ) = check(date != null && date.isBefore(cutoff), message)
+
+    fun checkAfter(
+        date: LocalDate?,
+        cutoff: LocalDate,
+        message: () -> String,
+    ) = check(date != null && date.isAfter(cutoff), message)
 
     fun addAll(validators: List<ApplicationValidator>?) =
         validators?.reduceOrNull { acc, validator -> acc.add(validator) }?.let { this.add(it) }

@@ -195,6 +195,32 @@ class ApplicationValidatorTest :
                 .shouldBeFailure { it.message.shouldBe("fail - out of range") }
         }
 
+        test("checkNotIn – failure and success") {
+            validateToResult("fail") { checkNotIn("A", listOf("A", "B", "C")) { "value not allowed" } }
+                .shouldBeFailure { it.message.shouldBe("fail - value not allowed") }
+            validateToResult("ok") { checkNotIn("Z", listOf("A", "B", "C")) { "value not allowed" } }
+                .shouldBeSuccess()
+        }
+
+        test("checkUrl – valid and invalid URL") {
+            validateToResult("ok") { checkUrl("https://example.com") { "bad URL" } }.shouldBeSuccess()
+            validateToResult("fail") { checkUrl("not a url") { "bad URL" } }
+                .shouldBeFailure { it.message.shouldBe("fail - bad URL") }
+        }
+
+        test("checkBefore and checkAfter – date comparisons") {
+            val today = java.time.LocalDate.of(2024, 2, 14)
+            val tomorrow = today.plusDays(1)
+            val yesterday = today.minusDays(1)
+            validateToResult("ok") { checkBefore(yesterday, today) { "date too late" } }
+                .shouldBeSuccess()
+            validateToResult("fail") { checkBefore(today, today) { "date too late" } }
+                .shouldBeFailure { it.message.shouldBe("fail - date too late") }
+            validateToResult("ok") { checkAfter(tomorrow, today) { "date too early" } }
+                .shouldBeSuccess()
+            validateToResult("fail") { checkAfter(today, today) { "date too early" } }
+                .shouldBeFailure { it.message.shouldBe("fail - date too early") }
+        }
         test("checkPositive, checkNonNegative, and checkNegative") {
             validateToResult("ok") { checkPositive(1) { "must be positive" } }.shouldBeSuccess()
             validateToResult("fail") { checkPositive(0) { "must be positive" } }
